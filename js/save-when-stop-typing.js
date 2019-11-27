@@ -17,61 +17,66 @@
  * 
  */
 function SaveWhenStopTyping($textarea, callbacks) { 
-/* Customizable */
-this.relativeUrl = "data";
-this.poll = 2000; // ms
-
-/* Engine */
-this.$textarea = $textarea; 
-this.callbacks = callbacks;
-if($textarea.length==0) {
-    console.log("ERROR: jQuery queried DOM does not exist.");
-    return;
-}
-var tthis = this;
-
-// Load text on start (nocache)
-$.ajax({method:"get", 
-        url:`${tthis.relativeUrl}/data.txt?nocache=${new Date().getTime()}`, 
-        cache:false
-}).done( (res)=> {
-    tthis.$textarea.val(res);
-});
-
-this.recounter = null;
-this.resetRecounter = () => {
-    if(tthis.recounter!==null) {
-    clearTimeout(tthis.recounter);
+    /* Customizable */
+    this.relativeUrl = "data";
+    this.poll = 1400; // ms
+    
+    /* Engine */
+    this.$textarea = $textarea; 
+    this.callbacks = callbacks;
+    if($textarea.length==0) {
+        console.log("ERROR: jQuery queried DOM does not exist.");
+        return;
     }
-    tthis.recounter = setTimeout(()=>{ 
-    console.log(`Hadn't reset timer because no typing detected for ${tthis.poll}ms. This timer eventually saves text.`);
-    tthis.save(); 
-    }, tthis.poll);
-} // resetRecounter
-
-this.save = () => {
-    $.ajax({method:"post", url:`${tthis.relativeUrl}/save.php`, data: { "log":tthis.$textarea.val() }}).done(()=>{
-        // Web console: Saved
-        console.log("%cSaved", "font-weight:900");
-
-        // Callbacks
-        if(tthis.callbacks!==undefined) {
-        if(Array.isArray(tthis.callbacks)) {
-            for(i = 0; i<tthis.callbacks.length; i++) {
-            tthis.callbacks[i].call(tthis.$textarea);
-            } // for
-        } else {
-            var callback = tthis.callbacks;
-            callback.call(tthis.$textarea);
-        } // else
-        } // if not undefined
-    }); // ajax
-} // save
-
-// On input
-this.$textarea.on("keyup", () => {
-    tthis.resetRecounter();
-    console.log("Resetted timer because user typed. This timer eventually saves text.");
-}); // keydown
-
-} // SaveWhenStopTyping
+    var tthis = this;
+    
+    // Load text on start (nocache)
+    $.ajax({method:"get", 
+            url:`${tthis.relativeUrl}/data.txt?nocache=${new Date().getTime()}`, 
+            cache:false
+    }).done( (res)=> {
+        tthis.$textarea.val(res);
+    });
+    
+    this.recounter = null;
+    this.resetRecounter = () => {
+        if(tthis.recounter!==null) {
+        clearTimeout(tthis.recounter);
+        }
+        tthis.recounter = setTimeout(()=>{ 
+        console.log(`Hadn't reset timer because no typing detected for ${tthis.poll}ms. This timer eventually saves text.`);
+        tthis.save(); 
+        }, tthis.poll);
+    } // resetRecounter
+    
+    this.save = () => {
+        $.ajax({method:"post", url:`${tthis.relativeUrl}/save.php`, data: { "log":tthis.$textarea.val() }}).done(()=>{
+            // Web console: Saved
+            console.log("%cSaved", "font-weight:900");
+    
+            // Callbacks
+            if(tthis.callbacks!==undefined) {
+            if(Array.isArray(tthis.callbacks)) {
+                for(i = 0; i<tthis.callbacks.length; i++) {
+                tthis.callbacks[i].call(tthis.$textarea);
+                } // for
+            } else {
+                var callback = tthis.callbacks;
+                callback.call(tthis.$textarea);
+            } // else
+            } // if not undefined
+        }); // ajax
+    } // save
+    
+    // On input
+    this.$textarea
+        .on("keyup", () => {
+            tthis.resetRecounter();
+            console.log("Resetted timer because user typed. This timer eventually saves text.");
+        }) // keydown
+        .on("change", () => {
+            clearTimeout(tthis.recounter);
+            tthis.save();
+        });
+    
+    } // SaveWhenStopTyping
