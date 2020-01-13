@@ -19,7 +19,7 @@
 function SaveWhenStopTyping($textarea, callbacks) { 
     /* Customizable */
     this.relativeUrl = "data";
-    this.poll = 1400; // ms
+    this.poll = 1200; // ms
     
     /* Engine */
     this.$textarea = $textarea; 
@@ -29,14 +29,6 @@ function SaveWhenStopTyping($textarea, callbacks) {
         return;
     }
     var tthis = this;
-    
-    // Load text on start (nocache)
-    $.ajax({method:"get", 
-            url:`${tthis.relativeUrl}/data.txt?nocache=${new Date().getTime()}`, 
-            cache:false
-    }).done( (res)=> {
-        tthis.$textarea.val(res);
-    });
     
     this.recounter = null;
     this.resetRecounter = () => {
@@ -70,11 +62,11 @@ function SaveWhenStopTyping($textarea, callbacks) {
     
     // On input
     this.$textarea
-        .on("keyup", () => {
+        .on("input", () => {
             tthis.resetRecounter();
             console.log("Resetted timer because user typed. This timer eventually saves text.");
         }) // keydown
-        .on("change", () => {
+        .on("blur", () => {
             clearTimeout(tthis.recounter);
             tthis.save();
         });
